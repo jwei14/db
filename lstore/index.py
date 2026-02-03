@@ -7,6 +7,8 @@ class Index:
     def __init__(self, table):
         # One index for each table. All our empty initially.
         self.indices = [None] *  table.num_columns
+        self.table = table
+        self.primary_key_index = {} # Will be filled in by INSERT
         pass
 
     """
@@ -14,7 +16,7 @@ class Index:
     """
 
     def locate(self, column, value):
-        pass
+        return self.primary_key_index[value]
 
     """
     # Returns the RIDs of all records with values in column "column" between "begin" and "end"

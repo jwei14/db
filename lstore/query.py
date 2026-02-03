@@ -1,5 +1,6 @@
 from lstore.table import Table, Record
 from lstore.index import Index
+import time
 
 
 class Query:
@@ -31,7 +32,30 @@ class Query:
     """
     def insert(self, *columns):
         schema_encoding = '0' * self.table.num_columns
-        pass
+
+        # Check for duplicate key already in table
+        key_val = columns[self.table.key] # Identify value of new key
+        if key_val in self.table.index.primary_key_index: 
+            return False
+
+        # Assign RID & Get Time
+        rid = self.table.get_rid()
+        timestamp = int(time.time())
+
+        # Find and add the record into the next avaliable space
+        self.table.page_range[-1].append_base(rid, None, timestamp, schema_encoding, columns)
+
+        # Update the index
+        self.table.index.primary_key_index[key_val] = rid
+
+        # Add to the page directory
+        location = (len(self.table.page_range) - 1, self.table.page_range.current_base_index, )
+        self.table.page_directory[rid] = 
+        return True
+
+
+
+
 
     
     """
