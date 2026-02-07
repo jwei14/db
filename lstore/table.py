@@ -2,8 +2,9 @@ from lstore.index import Index
 from time import time
 from lstore.page_range import PageRange
 
-INDIRECTION_COLUMN = 0
-RID_COLUMN = 1
+# Switched RID and Indirection
+RID_COLUMN = 0
+INDIRECTION_COLUMN = 1
 TIMESTAMP_COLUMN = 2
 SCHEMA_ENCODING_COLUMN = 3
 

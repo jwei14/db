@@ -29,8 +29,8 @@ class Page:
             return False
 
     def get_offset(self):
-        # return the slot #/offset # for the given data (needs to be coded)
-        return self.num_records * 8
+        # return the slot #/offset # for the previous entry
+        return (self.num_records - 1) * 8
         
 class BasePage:
     def __init__(self, num_cols):

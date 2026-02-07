@@ -36,6 +36,6 @@ class PageRange:
     # Used when previous tail page is full
     def add_tail_page(self):
         t = TailPage()
-        self.tail_pages.append(b)
+        self.tail_pages.append(t)
         self.current_tail_index += 1
-        return B
+        return t

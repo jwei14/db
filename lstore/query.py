@@ -48,9 +48,9 @@ class Query:
         # Update the index
         self.table.index.primary_key_index[key_val] = rid
 
-        # Add to the page directory
-        location = (len(self.table.page_range) - 1, self.table.page_range.current_base_index, )
-        self.table.page_directory[rid] = 
+        # Add to the page directory: RID -> (page_range, page #, offset)
+        location = (len(self.table.page_range) - 1, self.table.page_range[-1].current_base_index, self.table.page_range[-1].base_pages[-1].get_offset())
+        self.table.page_directory[rid] = location
         return True
 
 
