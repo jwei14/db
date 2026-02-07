@@ -10,8 +10,8 @@ class PageRange:
     # Adds user info into columns inside base page (for INSERT)
     def append_base(self, rid, indirection, time, se, col_info):
         if len(self.base_pages) == 16:
-            p = PageRange() # create a new page range
-            add_base_page()
+            col = len(col_info) + 4
+            p = PageRange(col) # create a new page range
             p.base_pages[p.current_base_index].append_record(rid, indirection, time, se, col_info)
         else:
             self.base_pages[self.current_base_index].append_record(rid, indirection, time, se, *col_info) 

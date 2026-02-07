@@ -23,7 +23,7 @@ class Page:
             value = int(value, 2) # convert bitmap to binary
         if self.has_capacity(): 
             offset = self.num_records * 8
-            self.data[offset:offset+8] = value.to_bytes(8, byteorder='big')
+            self.data[offset:offset+8] = value.to_bytes(8, byteorder='big', signed = True)
             self.num_records += 1
         else:
             return False
