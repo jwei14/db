@@ -42,10 +42,14 @@ class BasePage:
 
     # Retrieves a record
     def get_record(self, offset):
-        record = (self.rid[offset:offset+8], self.indirection[offset:offset+8], self.time[offset:offset+8], self.schema_encoding[offset:offset+8])
+        record = (self.rid.data[offset:offset+8], self.indirection.data[offset:offset+8], self.time.data[offset:offset+8], self.schema_encoding.data[offset:offset+8])
         for page in self.pages:
-            record += (page[offset:offset+8],)
-        return record
+            record += (page.data[offset:offset+8],)
+        
+        new_record = []
+        for item in record:
+            new_record.append(int.from_bytes(item, byteorder='big'))
+        return new_record
     
     def get_offset(self):
         return self.rid.get_offset()

@@ -28,10 +28,13 @@ class Table:
         self.key = key
         self.num_columns = num_columns
         self.page_directory = {}
+        self.tail_page_directory = {}
         self.page_range = [PageRange(num_columns)] # Stores all page ranges
         self.index = Index(self)
         self.merge_threshold_pages = 50  # The threshold to trigger a merge
+        self.total_columns = num_columns + 4
         self.base_rid_count = 1 # RID counter
+        self.tail_rid_count = 1
 
     def __merge(self):
         print("merge is happening")
@@ -50,7 +53,23 @@ class Table:
         record = self.page_range[location[0]].base_pages[location[1]].get_record(location[2])
         return record
 
+    # Get base RID
     def get_rid(self):
         rid = self.base_rid_count
         self.base_rid_count += 1
         return rid
+
+    # Get tail RID
+    def get_tail_rid(self):
+        rid = self.tail_rid_count
+        self.tail_rid_count += 1
+        return rid
+
+    # Add base record
+    def add_base_record(self, rid, indirection, time, se, col_info):
+        # Add new page range
+        if len(self.page_range[-1].base_pages) == 16 and self.page_range[-1].base_appends == 512: 
+            p = PageRange(self.num_columns)
+            self.page_range.append(p)
+
+        self.page_range[-1].append_base(rid, None, time, se, col_info)

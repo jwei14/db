@@ -9,11 +9,15 @@ grades_table = db.create_table('Grades', 2, 0)
 query = Query(grades_table)
 keys = []
 
-'''
-query.insert(906659671, 93)
-print(grades_table.page_directory)
-print(grades_table.index.primary_key_index)
 
+#query.insert(906659671, 93)
+
+#print(grades_table.page_directory)
+#print(grades_table.index.primary_key_index)
+
+#print(query.update(906659671, *[None, 10]))
+
+'''
 print(int.from_bytes(db.tables[0].page_range[0].base_pages[0].rid.data[0:8], byteorder = 'big'))
 print(int.from_bytes(db.tables[0].page_range[0].base_pages[0].indirection.data[0:8], byteorder = 'big'))
 print(int.from_bytes(db.tables[0].page_range[0].base_pages[0].time.data[0:8], byteorder = 'big'))
@@ -38,5 +42,10 @@ for i in range(0, 10000):
     query.insert(906659671 + i, 93)
     keys.append(906659671 + i)
 insert_time_1 = process_time()
+
+print(len(grades_table.page_range[0].base_pages))
+print(len(grades_table.page_directory))
+print(len(grades_table.index.primary_key_index))
+
 
 print("Inserting 10000 records took:  \t\t\t", insert_time_1 - insert_time_0)

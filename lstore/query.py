@@ -43,7 +43,7 @@ class Query:
         timestamp = int(time.time())
 
         # Find and add the record into the next avaliable space
-        self.table.page_range[-1].append_base(rid, None, timestamp, schema_encoding, columns)
+        self.table.add_base_record(rid, None, timestamp, schema_encoding, columns)
 
         # Update the index
         self.table.index.primary_key_index[key_val] = rid
@@ -84,14 +84,49 @@ class Query:
     def select_version(self, search_key, search_key_index, projected_columns_index, relative_version):
         pass
 
-    
+    '''
     """
     # Update a record with specified key and columns
     # Returns True if update is succesful
     # Returns False if no records exist with given key or if the target record cannot be accessed due to 2PL locking
     """
     def update(self, primary_key, *columns):
-        pass
+        # Get RID using key, via the index
+        try:    
+            rid = self.table.index.primary_key_index[primary_key]
+        except:
+            return False
+
+        # Get record using the page directory (metadata, col1, .., col n)
+        record = self.table.get_record(rid)
+        
+        # Allocate a new tail record and assign an RID
+        tail_rid = self.table.get_tail_rid()
+        timestamp = int(time.time())
+
+        
+        # Gets schema encoding 
+        # Note binmask is an integer (need to convert to binary to see schema encoding)
+        bitmask = 0
+        for i in range(len(columns)):
+            pos = len(columns) - (i + 1)
+            if columns[i] != None:                
+                bitmask |= (1 << pos)
+        
+        # Get indirection
+        # POSSIBLE ISSUE: BASE AND TAIL RID CONFLICT
+        if record[1] == 0: # first tail record created
+            indirection = rid
+        else:
+            indirection = record[1]
+        '''
+        
+        
+        
+            
+        
+
+
 
     
     """
