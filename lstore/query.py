@@ -105,7 +105,10 @@ class Query:
                     # Get new tail record, using indirection
                     indirection = record[1]
 
-                record_objects.append(cols)
+                # Store as a Record object
+                # Question: Is the key supposed to be the search key or the index of the column with the search key?
+                # Currently it is set to be the search key
+                record_objects.append(Record(rid=rid_list[i], key=search_key, columns=cols))
         return record_objects
 
 
@@ -133,7 +136,7 @@ class Query:
             # Return the base record version
             base_record = self.table.get_record(rid_list[i])
             if relative_version == 0 or base_record[1] == 0:
-                record_objects.append(base_record[4:])
+                record_objects.append(Record(rid=rid_list[i], key=search_key, columns=base_record[4:]))
                 continue
                 
             isBase = relative_version == 0
@@ -163,7 +166,7 @@ class Query:
                 for k in range(len(index_cols)):
                     if index_cols[k] == 0:
                         cols[k] = None
-                record_objects.append(cols)
+                record_objects.append(Record(rid=rid_list[i], key=search_key, columns=cols))
                 continue
             else:
                 indirection = base_record[1] # use indirection to find latest tail page
@@ -185,7 +188,7 @@ class Query:
                     indirection = record[1]
 
                 cols[search_key_index] = search_key # Added because tail records don't have primary key saved; can anyone think of a better way?
-                record_objects.append(cols)
+                record_objects.append(Record(rid=rid_list[i], key=search_key, columns=cols))
 
         return record_objects
 

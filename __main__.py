@@ -15,10 +15,15 @@ query.update(906659671, *[None, 10, None, None, None])
 query.update(906659671, *[None, 11, None, None, None])
 query.update(906659671, *[None, 12, 35, None, None])
 query.update(906659671, *[None, None, None, 67, None])
-print(query.select_version(906659671, 0, [1,1,1,1,1], 0))
-print(query.select_version(906659671, 0, [1,1,1,1,1], -1))
+
+#query.select(906659671, 0, [1,1,1,1,1])[0]
+
+
+#query.select_version(906659671, 0, [1,1,1,1,1], 0)[0]
+recordObject = query.select_version(906659671, 0, [1,1,1,1,1], -1)[0]
 print(query.select_version(906659671, 0, [1,1,1,1,1], -2))
 print(query.select_version(906659671, 0, [1,1,1,1,1], -3))
+
 
 
 query.insert(906659671, 93, 79)
