@@ -73,84 +73,40 @@ class Query:
             return False
         
         record_objects = []
-        base_record = self.table.get_record(rid_list[0])
-        cols = base_record[4:] # user columns in base record
-        index_cols = projected_columns_index[:]
 
-        # Check if there are any tail records at all
-        if base_record[1] == 0:
-            for i in range(len(index_cols)):
-                if index_cols[i] == 0:
-                    cols[i] = None
-            record_objects.append(cols)
-            return record_objects # this will need to be changed when there are multiple RID
-        else:
-            record = self.table.get_record(base_record[1]) # use indirection to find latest tail page
-        
-        for index, binary in enumerate(index_cols):
-            # Check if all columns have been updated
-            if 1 not in index_cols:
-                break
+        for i in range(len(rid_list)):
+            base_record = self.table.get_record(rid_list[i])
+            cols = base_record[4:] # user columns in base record
+            index_cols = projected_columns_index[:]
 
-            # Check if column needs to be returned
-            if binary == 0:
-                cols[index] = None
-            elif binary == -1: # Column has already been updated
+            # Check if there are any tail records at all
+            if base_record[1] == 0:
+                for j in range(len(index_cols)):
+                    if index_cols[j] == 0:
+                        cols[j] = None
+                record_objects.append(cols)
                 continue
-            elif binary == 1:
-                if record[index + 4] != cols[index] and record[index+4] != 0: # new value is different and not equal to zero
-                    cols[index] = record[index + 4]
-                    index_cols[index] = -1
+            else:
+                indirection = base_record[1] # use indirection to find latest tail page
+
+                while 1 in index_cols and indirection != rid_list[i]: # Check if any columns still need update or if we return to base page
+                    record = self.table.get_record(indirection) # use indirection to find latest tail page
+                    for index, binary in enumerate(index_cols):
+                        # Check if column needs to be returned
+                        if binary == 0:
+                            cols[index] = None
+                        elif binary == -1: # Column has already been updated
+                            continue
+                        elif binary == 1:
+                            if record[index + 4] != cols[index] and record[index+4] != 0: # new value is different and not equal to zero
+                                cols[index] = record[index + 4]
+                                index_cols[index] = -1
             
-            # Get new tail record, using indirection
-            indirection = record[1]
-            record = self.table.get_record(indirection) 
-
-        record_objects.append(cols)
-
-        return record_objects
-
-
-        '''
-        # Traverse through all base and corresponding tail records
-        # Steps: Go to base record and find its indirection, then update info, repeat process until you return to base record
-        record_objects = []
-        record = self.table.get_record(rid_list[0]) # base record
-        cols = record[4:]
-        updated = [0] * len(projected_columns_index)
-
-        for rid in rid_list: 
-            current_projection = projected_columns_index[:]
-
-            while True:
-                # Updates column information
-                for i in range(len(record) - 4):
-                    if record[i+4] != current_projection[i] and current_projection[i] != 0 and record[i+4] != None:
-                        current_projection[i] = record[i+4]
-
-                rid_seen.append(record[0]) # Add rid to list
-
-                if record[1] in rid_seen: # returning to the original base page
-                    break
-                elif 0 in rid_seen: # no tail pages avaliable
-                    break
-                else:
+                    # Get new tail record, using indirection
                     indirection = record[1]
-                    record = self.table.get_record(indirection)
 
-            # Setting all zeros to None
-            for i in range(len(current_projection)):
-                if current_projection[i] == 0:
-                    current_projection[i] = None
-
-            record_objects.append(current_projection)
-        '''
-        
-                    
-
-
-
-
+                record_objects.append(cols)
+        return record_objects
 
 
     
@@ -165,7 +121,73 @@ class Query:
     # Assume that select will never be called on a key that doesn't exist
     """
     def select_version(self, search_key, search_key_index, projected_columns_index, relative_version):
-        pass
+        try:    
+            rid_list = [self.table.index.locate(search_key_index, search_key)]
+        except:
+            return False
+        
+
+        record_objects = []
+
+        for i in range(len(rid_list)):
+            # Return the base record version
+            base_record = self.table.get_record(rid_list[i])
+            if relative_version == 0 or base_record[1] == 0:
+                record_objects.append(base_record[4:])
+                continue
+                
+            isBase = relative_version == 0
+
+            # Iterate through the pages, (relative_version) times
+            while relative_version < 0:
+                if base_record[1] == 0:
+                     break # no past version beyond this exists
+                else:
+                    indirection = base_record[1]
+                    base_record = self.table.get_record(indirection)
+                relative_version += 1
+
+            cols = base_record[4:] # user columns in base record
+            index_cols = projected_columns_index[:]
+
+            # Check Schema Encoding to see which columns were updated in this tail record
+            num_cols = len(cols)
+            schema = format(base_record[3], f'0{num_cols}b')
+            for j in range(len(schema)):
+                if schema[j] == "1":
+                    index_cols[j] = -1
+
+
+            # Check if there are any tail records at all
+            if base_record[1] == 0:
+                for k in range(len(index_cols)):
+                    if index_cols[k] == 0:
+                        cols[k] = None
+                record_objects.append(cols)
+                continue
+            else:
+                indirection = base_record[1] # use indirection to find latest tail page
+
+                while 1 in index_cols and indirection != rid_list[i]: # Check if any columns still need update or if we return to base page
+                    record = self.table.get_record(indirection) # use indirection to find latest tail page
+                    for index, binary in enumerate(index_cols):
+                        # Check if column needs to be returned
+                        if binary == 0:
+                            cols[index] = None
+                        elif binary == -1: # Column has already been updated
+                            continue
+                        elif binary == 1:
+                            if record[index + 4] != cols[index] and record[index+4] != 0: # new value is different and not equal to zero
+                                cols[index] = record[index + 4]
+                                index_cols[index] = -1
+            
+                    # Get new tail record, using indirection
+                    indirection = record[1]
+
+                cols[search_key_index] = search_key # Added because tail records don't have primary key saved; can anyone think of a better way?
+                record_objects.append(cols)
+
+        return record_objects
 
 
     """
@@ -203,7 +225,6 @@ class Query:
                 base_bitmask |= (1 << pos)
 
         # Get indirection
-        # POSSIBLE ISSUE: BASE AND TAIL RID CONFLICT
         if record[1] == 0: # first tail record created
             indirection = rid
         else:
